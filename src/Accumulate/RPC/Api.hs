@@ -63,7 +63,7 @@ runTCPClient host port f = do
 -- |  getData returns Accumulate Object by URL
 --
 reqGetData :: Text -> RPC ()
-reqGetData url = method "get" $ List [String url]
+reqGetData url = method "get" $ Named [("jsonrpc", String "2.0"), ("url", String url)]
 
 -- |  GetDirectory returns ADI directory entries
 --
@@ -116,8 +116,8 @@ reqGetMetrics url = method "metrics" $ List [String url]
 
 -- |
 --
-reqGetData :: Text -> RPC ()
-reqGetData url = method "faucet" $ List [String url]
+reqFaucet :: Text -> RPC ()
+reqFaucet url = method "faucet" $ List [String url]
 
 
 --------------------------------------------------------------------------------

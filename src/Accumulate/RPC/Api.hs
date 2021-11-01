@@ -58,11 +58,76 @@ runTCPClient host port f = do
 -- $ Named [("jsonrpc", String "2.0"), ("id", toJSON (0::Int))]
 
 --------------------------------------------------------------------------------
+-- Data retrieval methods
 
+-- |  getData returns Accumulate Object by URL
+--
 reqGetData :: Text -> RPC ()
 reqGetData url = method "get" $ List [String url]
 
+-- |  GetDirectory returns ADI directory entries
+--
+reqGetDirectory :: Text -> RPC ()
+reqGetDirectory url = method "get-directory" $ List [String url]
+
 --------------------------------------------------------------------------------
+-- ADIs
+
+-- |
+--
+reqGetADI :: Text -> RPC ()
+reqGetADI url = method "adi" $ List [String url]
+
+-- |
+--
+reqCreateADI :: Text -> RPC ()
+reqCreateADI url = method "adi-create" $ List [String url]
+
+
+--------------------------------------------------------------------------------
+-- Key Management
+
+-- |
+--
+reqGetKeyBook :: Text -> RPC ()
+reqGetKeyBook url = method "sig-spec-group" $ List [String url]
+
+
+--------------------------------------------------------------------------------
+-- Tokens
+
+-- |
+--
+reqGetToken :: Text -> RPC ()
+reqGetToken url = method "token" $ List [String url]
+
+
+--------------------------------------------------------------------------------
+-- Metrics
+
+-- |
+--
+reqGetMetrics :: Text -> RPC ()
+reqGetMetrics url = method "metrics" $ List [String url]
+
+
+--------------------------------------------------------------------------------
+-- Faucet
+
+-- |
+--
+reqGetData :: Text -> RPC ()
+reqGetData url = method "faucet" $ List [String url]
+
+
+--------------------------------------------------------------------------------
+-- Credits
+
+-- |
+--
+reqAddCredits :: Text -> RPC ()
+reqAddCredits url = method "add-credits" $ List [String url]
+
 
 main = do
   let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)

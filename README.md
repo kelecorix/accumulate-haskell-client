@@ -1,0 +1,2 @@
+# Haskell client for Accumulate
+

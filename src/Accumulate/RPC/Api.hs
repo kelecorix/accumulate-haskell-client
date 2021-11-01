@@ -33,11 +33,11 @@ import           Network.Socket                        (HostName, ServiceName,
                                                         getAddrInfo, socket)
 
 import           Accumulate.RPC.JsonRpc                    (JsonRpcT, runJsonRpcT)
-
+import           Accumulate.RPC.Types.ApiDataResponse
 
 --------------------------------------------------------------------------------
 
-endpoint = "http://178.20.158.25:35554/v1"
+endpoint = "http://95.141.37.250:35554/v1"
 
 runTCPClient :: HostName -> ServiceName -> JsonRpcT IO a -> IO a
 runTCPClient host port f = do
@@ -62,8 +62,8 @@ runTCPClient host port f = do
 
 -- |  getData returns Accumulate Object by URL
 --
-reqGetData :: Text -> RPC ()
-reqGetData url = method "get" $ Named [("jsonrpc", String "2.0"), ("url", String url)]
+reqGetData :: Text -> RPC APIDataResponse
+reqGetData url = method "get" $ Named [("url", String url)] --  Named [("wait", Bool False), ("url", String url)]
 
 -- |  GetDirectory returns ADI directory entries
 --
@@ -133,6 +133,7 @@ main = do
   let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
   h <-
     send s $ do
-      h <- reqGetData "acc://9c549cbba290efeb8029184caac3d36c5bfcacb361a29282/ACME"
+      h <- reqGetData "acc://c9359900016daa23da0f4c07e66be42c398fe2b10017cecb/ACME"
       return h
-  print h
+  putStrLn "-----------"
+  print $ show $ h

@@ -33,6 +33,7 @@ import           Network.Socket                 (Socket)
 import           Network.Socket.ByteString      (recv, sendAll)
 
 --------------------------------------------------------------------------------
+
 newtype Version =
   Version Text
   deriving (Eq, Show, ToJSON, FromJSON)

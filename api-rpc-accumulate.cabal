@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c83067dcc21cab38dcace3ba01dd48107c589bb19c2178c183426cef2b1721e6
+-- hash: c851ac6bdf1ed92bd1a4bcd4e4d2181f4a74137a7959a52e9b18f4360726f8f6
 
 name:           api-rpc-accumulate
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       Accumulate.RPC.Types
   other-modules:
       Accumulate.RPC.JsonRpc
+      Accumulate.RPC.Types.ApiDataResponse
       Paths_api_rpc_accumulate
   hs-source-dirs:
       src
@@ -51,6 +52,7 @@ library
     , text
     , time
     , transformers
+    , unordered-containers
   default-language: Haskell2010
 
 executable acme-app

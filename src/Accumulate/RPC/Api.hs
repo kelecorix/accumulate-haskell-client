@@ -34,6 +34,8 @@ import           Network.Socket                        (HostName, ServiceName,
 
 import           Accumulate.RPC.JsonRpc                    (JsonRpcT, runJsonRpcT)
 import           Accumulate.RPC.Types.ApiDataResponse
+import           Accumulate.RPC.Types.ApiDataMetricsResponse
+import           Accumulate.RPC.Types.ApiDataVersionResponse
 
 --------------------------------------------------------------------------------
 
@@ -107,8 +109,14 @@ reqGetToken url = method "token" $ List [String url]
 
 -- |
 --
-reqGetMetrics :: Text -> RPC ()
-reqGetMetrics url = method "metrics" $ List [String url]
+reqGetMetrics :: Text -> Text -> RPC APIDataMetricsResponse
+reqGetMetrics metricName duration =
+  method "metrics" $ Named [ ("metric"  , String metricName)
+                           , ("duration", String duration)
+                           ]
+
+reqGetVersion :: RPC APIDataVersionResponse
+reqGetVersion = method "version" $ List []
 
 
 --------------------------------------------------------------------------------
@@ -117,7 +125,7 @@ reqGetMetrics url = method "metrics" $ List [String url]
 -- |
 --
 reqFaucet :: Text -> RPC ()
-reqFaucet url = method "faucet" $ List [String url]
+reqFaucet url = method "faucet" $ Named [("url", String url)]
 
 
 --------------------------------------------------------------------------------
@@ -131,9 +139,13 @@ reqAddCredits url = method "add-credits" $ List [String url]
 
 main = do
   let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
-  h <-
+  (m,v) <-
     send s $ do
-      h <- reqGetData "acc://c9359900016daa23da0f4c07e66be42c398fe2b10017cecb/ACME"
-      return h
+      --h <- reqGetData "acc://c9359900016daa23da0f4c07e66be42c398fe2b10017cecb/ACME"
+      m <- reqGetMetrics "tps" "1h"
+      v <- reqGetVersion
+      return (m, v)
   putStrLn "-----------"
-  print $ show $ h
+  print $ show $ m
+  putStrLn "-----------"
+  print $ show $ v

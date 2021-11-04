@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c851ac6bdf1ed92bd1a4bcd4e4d2181f4a74137a7959a52e9b18f4360726f8f6
+-- hash: 7dc3e7436e88ca04d59444cf5fabf93acde867ee79c32786d93755bbbb87a6c9
 
 name:           api-rpc-accumulate
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       Accumulate.RPC.Types
   other-modules:
       Accumulate.RPC.JsonRpc
+      Accumulate.RPC.Types.ApiDataMetricsResponse
       Accumulate.RPC.Types.ApiDataResponse
       Paths_api_rpc_accumulate
   hs-source-dirs:

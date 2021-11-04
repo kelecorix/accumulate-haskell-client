@@ -57,6 +57,7 @@ runTCPClient host port f = do
     talk sock = runJsonRpcT sock f
 
 
+-- Options to convert internal types into Aeson values
 -- $ Named [("jsonrpc", String "2.0"), ("id", toJSON (0::Int))]
 
 --------------------------------------------------------------------------------
@@ -98,11 +99,21 @@ reqGetKeyBook url = method "sig-spec-group" $ List [String url]
 --------------------------------------------------------------------------------
 -- Tokens
 
--- |
+-- | Get infromation about token
 --
 reqGetToken :: Text -> RPC ()
 reqGetToken url = method "token" $ List [String url]
 
+
+-- | Get information about token transaction
+--
+reqGetTokenTx :: Text -> RPC ()
+reqGetTokenTx txid = method "token-tx" $ List [String txid]
+
+-- | Create new token transaction
+--
+reqCreateTokenTx :: Text -> RPC ()
+reqCreateTokenTx url = method "token-tx-create" $ List [String url]
 
 --------------------------------------------------------------------------------
 -- Metrics
@@ -142,6 +153,7 @@ main = do
   (m,v) <-
     send s $ do
       --h <- reqGetData "acc://c9359900016daa23da0f4c07e66be42c398fe2b10017cecb/ACME"
+      --t <- reqGetTokenTx ""
       m <- reqGetMetrics "tps" "1h"
       v <- reqGetVersion
       return (m, v)

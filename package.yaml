@@ -1,11 +1,11 @@
 name: api-rpc-accumulate
 version: '0.1.0.0'
-description: simple json-rpc API client for Accumulate blockchain
-synopsis: simple json-rpc API client for Accumulate
+description: JSON-RPC API client for Accumulate blockchain. Contains basic models and api calls.
+synopsis: JSON-RPC API client for Accumulate blockchain
 category: Web
 author: Sergey Bushnyak
 maintainer: sergey.bushnyak@sigrlami.eu
-copyright: ! 'Copyright: (c) 2021 Sergey Bushnyak, Kelecorix, Inc'
+copyright: ! 'Copyright: (c) 2021-2022 Sergey Bushnyak, Kelecorix, Inc'
 license: MIT
 github: kelecorix/accumulate-haskell-client
 extra-source-files:
@@ -51,7 +51,7 @@ executables:
     - time
     - api-rpc-accumulate
 tests:
-  factom-test:
+  acme-test:
     main: Spec.hs
     source-dirs: tests
     ghc-options:

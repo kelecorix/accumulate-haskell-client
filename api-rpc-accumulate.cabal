@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 16e777bd07a42eb46d743d81a2fd6262d2513a47c32b02048d327bd938fc8797
+-- hash: 6188e76ba6fa8e8f71dc6e749113220b9b82a3c1533e30edd68f5ab46fab896a
 
 name:           api-rpc-accumulate
-version:        0.1.0.0
+version:        0.1.1.0
 synopsis:       JSON-RPC API client for Accumulate blockchain
 description:    JSON-RPC API client for Accumulate blockchain. Contains basic models and api calls.
 category:       Web

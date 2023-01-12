@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 157b7d66e084c78d0ed9e618438e9b6843232c9f032dbb93ebbe4213b7ffcb58
+-- hash: 16e777bd07a42eb46d743d81a2fd6262d2513a47c32b02048d327bd938fc8797
 
 name:           api-rpc-accumulate
 version:        0.1.0.0
@@ -37,8 +37,11 @@ library
       Accumulate.RPC.Types.ApiDataVersionResponse
       Accumulate.RPC.Types.IdentityADI
       Accumulate.RPC.Types.LiteAccount
+      Accumulate.RPC.Types.Responses.Query
+      Accumulate.RPC.Types.Responses.QueryDirectory
       Accumulate.RPC.Types.Responses.Version
       Accumulate.RPC.Types.TokenAccount
+      Accumulate.RPC.Utils.Marshaller
       Paths_api_rpc_accumulate
   hs-source-dirs:
       src
@@ -50,7 +53,6 @@ library
     , http-client
     , http-client-tls
     , http-conduit
-    , json-alt
     , network
     , remote-json
     , remote-json-client

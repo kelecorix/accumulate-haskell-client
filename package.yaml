@@ -31,7 +31,7 @@ library:
   - remote-monad
   - remote-json
   - remote-json-client
-  - json-alt
+  # - json-alt
   - unordered-containers
 executables:
   acme-app:

@@ -1,15 +1,20 @@
-resolver: lts-14.0
+resolver: lts-19.33
 
-allow-newer: true
+# allow-newer: true
 
 packages:
 - .
 
 extra-deps:
-- git: 'https://github.com/sigrlami/remote-json'
-  commit: 'd9e38be7955306418a3a6bc3fff8d15746f23ea0'
+- aeson-1.5.6.0
+- base-compat-0.11.2@sha256:31bfcb04e73c994e46fa1b6136dffbea75d2f6e27a67c493a97095bc53c8db40,7449
+- template-haskell-2.17.0.0@sha256:5a7c40bddd235aaf5d58632a63758bc0b5ebf98232d8dea7294b5ca5226ca577,2152
+- text-1.2.5.0@sha256:791f0f6c97ed96113f17ab520cf0efe1a3a4f883a8c85910a5660567c8241c40,7895
+- exceptions-0.10.4@sha256:d3aaa8d112cd53e16b5991bf5e43237ad6cf8277b8bab5cb8ab8e081dbb556f7,2684
+- git: https://github.com/sigrlami/remote-json
+  commit: 3413ecf33e047df98cc1aae12a0aaba14985d6e6
   subdirs:
     - .
     - remote-json-client
-- git: 'https://github.com/ku-fpg/remote-monad'
-  commit: '79d22ea2bde876e6640a25472d90fc3d7dd82a3a'
+- git: https://github.com/ku-fpg/remote-monad
+  commit: 79d22ea2bde876e6640a25472d90fc3d7dd82a3a

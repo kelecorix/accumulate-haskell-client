@@ -1,5 +1,5 @@
 name: api-rpc-accumulate
-version: '0.1.0.0'
+version: '0.1.1.0'
 description: JSON-RPC API client for Accumulate blockchain. Contains basic models and api calls.
 synopsis: JSON-RPC API client for Accumulate blockchain
 category: Web

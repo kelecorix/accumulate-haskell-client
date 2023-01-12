@@ -35,6 +35,8 @@ import           Network.Socket                        (HostName, ServiceName,
 import           Accumulate.RPC.JsonRpc                    (JsonRpcT, runJsonRpcT)
 import           Accumulate.RPC.Types.ApiDataResponse
 import           Accumulate.RPC.Types.Responses.Version
+import           Accumulate.RPC.Types.Responses.Query
+import           Accumulate.RPC.Types.Responses.QueryDirectory
 
 --------------------------------------------------------------------------------
 
@@ -100,7 +102,7 @@ reqGetKeyBook url = method "sig-spec-group" $ List [String url]
 
 -- | Get infromation about token
 --
-reqQuery :: Text -> RPC ()
+reqQuery :: Text -> RPC QueryResponse
 reqQuery url = method "query" $ Named [("url", String url)]
 
 
@@ -111,8 +113,8 @@ reqQueryTransaction txid = method "query-tx" $ List [String txid]
 
 -- |
 --
-reqQueryDirectory :: Text -> RPC ()
-reqQueryDirectory url = method "query-directory" $ List [String url]
+reqQueryDirectory :: Text -> RPC QueryDirectoryResponse
+reqQueryDirectory url = method "query" $ Named [("url", String url)]
 
 --------------------------------------------------------------------------------
 -- Metrics
@@ -149,15 +151,18 @@ reqAddCredits url = method "add-credits" $ List [String url]
 --------------------------------------------------------------------------------
 main = do
   let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
-  (m,v) <-
+  (v, q1, q2) <-
     send s $ do
-      --h <- reqGetData "acc://c9359900016daa23da0f4c07e66be42c398fe2b10017cecb/ACME"
-      --t <- reqGetTokenTx ""
-      --m <- reqGetMetrics "tps" "1h"
       v  <- reqGetVersion
       q1 <- reqQuery "acc://5d21072c5d44111fcd3cbe25161f5e143498b56266dc1cd8/acme"
-      return (v, q1)
-  putStrLn "-----------"
-  print $ show $ m
+      --q2 <- reqQueryTransaction "1748e91a5bb57d6deabc341659828800694aaaae8178db5d5e8885d47431cbe1"
+      q3 <- reqQueryDirectory "acc://zorro20"
+      return (v, q1, q3)
   putStrLn "-----------"
   print $ show $ v
+  putStrLn "-----------"
+  print $ show $ q1
+  putStrLn "-----------"
+  print $ show $ q2
+  -- putStrLn "-----------"
+  -- print $ show $ q3

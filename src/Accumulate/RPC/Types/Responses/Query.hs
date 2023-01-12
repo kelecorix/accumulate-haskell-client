@@ -2,10 +2,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Accumulate.RPC.Types.Responses.Query
-    ( VersionResponse (..)
+    ( QueryResponse (..)
     , MainChain (..)
     , Data (..)
-    , decodeTopLevel
+    , decodeResponseQuery
     ) where
 
 import Data.Aeson
@@ -14,12 +14,12 @@ import Data.ByteString.Lazy (ByteString)
 import Data.HashMap.Strict (HashMap)
 import Data.Text (Text)
 
-data VersionResponse = VersionResponse
-    { merkleStateVersionResponse :: MainChain
-    , chainIDVersionResponse :: Text
-    , versionResponseDataVersionResponse :: Data
-    , versionResponseTypeVersionResponse :: Text
-    , mainChainVersionResponse :: MainChain
+data QueryResponse = QueryResponse
+    { merkleStateQueryResponse :: MainChain
+    , chainIDQueryResponse :: Text
+    , queryResponseDataQueryResponse :: Data
+    , queryResponseTypeQueryResponse :: Text
+    , mainChainQueryResponse :: MainChain
     } deriving (Show)
 
 data MainChain = MainChain
@@ -39,21 +39,21 @@ data Data = Data
     , nonceData :: Int
     } deriving (Show)
 
-decodeTopLevel :: ByteString -> Maybe VersionResponse
-decodeTopLevel = decode
+decodeResponseQuery :: ByteString -> Maybe QueryResponse
+decodeResponseQuery = decode
 
-instance ToJSON VersionResponse where
-    toJSON (VersionResponse merkleStateVersionResponse chainIDVersionResponse versionResponseDataVersionResponse versionResponseTypeVersionResponse mainChainVersionResponse) =
+instance ToJSON QueryResponse where
+    toJSON (QueryResponse merkleStateQueryResponse chainIDQueryResponse queryResponseDataQueryResponse queryResponseTypeQueryResponse mainChainQueryResponse) =
         object
-        [ "merkleState" .= merkleStateVersionResponse
-        , "chainId" .= chainIDVersionResponse
-        , "data" .= versionResponseDataVersionResponse
-        , "type" .= versionResponseTypeVersionResponse
-        , "mainChain" .= mainChainVersionResponse
+        [ "merkleState" .= merkleStateQueryResponse
+        , "chainId" .= chainIDQueryResponse
+        , "data" .= queryResponseDataQueryResponse
+        , "type" .= queryResponseTypeQueryResponse
+        , "mainChain" .= mainChainQueryResponse
         ]
 
-instance FromJSON VersionResponse where
-    parseJSON (Object v) = VersionResponse
+instance FromJSON QueryResponse where
+    parseJSON (Object v) = QueryResponse
         <$> v .: "merkleState"
         <*> v .: "chainId"
         <*> v .: "data"

@@ -14,6 +14,7 @@ module Accumulate.RPC.JsonRpc
   , mkDefaultRequest
   ) where
 
+import           Control.Monad.Fail             (MonadFail, fail)
 import           Control.Monad.IO.Class         (MonadIO, liftIO)
 import           Control.Monad.Trans.Class      (lift)
 import           Control.Monad.Trans.Reader     (ReaderT, ask, runReaderT)
@@ -28,21 +29,21 @@ import           Data.Aeson.TH                  (defaultOptions, deriveJSON,
                                                  omitNothingFields)
 import           Data.ByteString.Lazy           (fromStrict, toStrict)
 import           Data.Either                    (Either)
-import           Data.Text                      (Text)
+import qualified Data.Text                      as T
 import           Network.Socket                 (Socket)
 import           Network.Socket.ByteString      (recv, sendAll)
 
 --------------------------------------------------------------------------------
 
 newtype Version =
-  Version Text
+  Version T.Text
   deriving (Eq, Show, ToJSON, FromJSON)
 
 version :: Version
 version = Version "2.0"
 
 newtype Method =
-  Method Text
+  Method T.Text
   deriving (Eq, Show, ToJSON, FromJSON)
 
 data Request a =
@@ -65,8 +66,8 @@ mkDefaultRequest method req = Request version method req 0
 data Error =
   Error
     { code    :: Int
-    , message :: Text
-    , errData :: Maybe Text
+    , message :: T.Text
+    , errData :: Maybe T.Text
     }
   deriving (Eq, Show)
 
@@ -84,12 +85,23 @@ data Response a =
 instance FromJSON a => FromJSON (Response a) where
   parseJSON =
     withObject "response" $ \o -> do
-      v <- o .: "jsonrpc"
-      jid <- o .: "id"
+      v      <- o .: "jsonrpc"
+      rid    <- o .: "id"
       result <- o .:? "result"
-      e <- o .:? "error"
-      let r = maybe (maybe (fail "invalid response") Left e) Right result
-      return $ Response v r jid
+      err    <- o .:? "error"
+      -- cwUnit <- strToUnit =<< o .: "unit"
+
+      let res = evaluateResult result err
+      return $ Response v res rid
+
+evaluateResult :: Maybe a -> Maybe Error -> Either Error a
+evaluateResult resultM errorM =
+  case resultM of
+    Just val -> Right val
+    Nothing  ->
+      case errorM of
+        Nothing  -> Left $ Error 0 "gerror" Nothing
+        Just err -> Left $ err
 
 unwrapJson :: (Show a, FromJSON a) => Response a -> Either Error a
 unwrapJson (Response _ r _) = r
@@ -114,4 +126,11 @@ request method params = do
   liftIO $ sendAll s req
   JsonRpcT $ modify' (+ 1)
   response <- fromStrict <$> liftIO (recv s 262144)
-  either fail (return . unwrapJson) $ eitherDecode' response
+  --either fail (return . unwrapJson) $ eitherDecode' response
+  return $
+    case eitherDecode' response of
+      Left  err  -> Left $ Error 1 (T.pack err) Nothing
+      Right resp ->
+        case unwrapJson resp of
+          Left  err -> Left err
+          Right r   -> Right r

@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StrictData        #-}
 
-module Accumulate.RPC.Types.Responses.Query
-    ( QueryResponse (..)
+module Accumulate.RPC.Types.Responses.QueryLiteIdentity
+    ( QueryResponseLiteIdentity (..)
     , Chain (..)
     , MainChain (..)
     , Data (..)
-    , decodeQueryResponse
+    , decodeTopLevel
     ) where
 
 import           Data.Aeson
@@ -15,52 +15,51 @@ import           Data.ByteString.Lazy (ByteString)
 import           Data.HashMap.Strict  (HashMap)
 import           Data.Text            (Text)
 
-data QueryResponse = QueryResponse
-    { merkleStateQueryResponse       :: MainChain
-    , queryResponseTypeQueryResponse :: Text
-    , chainsQueryResponse            :: [Chain]
-    , chainIDQueryResponse           :: Text
-    , queryResponseDataQueryResponse :: Data
-    , mainChainQueryResponse         :: MainChain
+data QueryResponseLiteIdentity = QueryResponseLiteIdentity
+    { merkleStateQueryResponseLiteIdentity                   :: MainChain
+    , queryResponseLiteIdentityTypeQueryResponseLiteIdentity :: Text
+    , chainsQueryResponseLiteIdentity                        :: [Chain]
+    , chainIDQueryResponseLiteIdentity                       :: Text
+    , queryResponseLiteIdentityDataQueryResponseLiteIdentity :: Data
+    , mainChainQueryResponseLiteIdentity                     :: MainChain
     } deriving (Show)
 
 data Chain = Chain
     { nameChain      :: Text
     , chainTypeChain :: Text
     , countChain     :: Int
-    , rootsChain     :: [(Maybe Text)]
+    , rootsChain     :: [Text]
     , heightChain    :: Int
     } deriving (Show)
 
 data MainChain = MainChain
     { countMainChain  :: Int
-    , rootsMainChain  :: [(Maybe Text)]
+    , rootsMainChain  :: [Text]
     , heightMainChain :: Int
     } deriving (Show)
 
 data Data = Data
-    { dataTypeData :: Text
-    , urlData      :: Text
-    , tokenURLData :: Text
-    , balanceData  :: Text
+    { dataTypeData   :: Text
+    , urlData        :: Text
+    , lastUsedOnData :: Int
     } deriving (Show)
 
-decodeQueryResponse :: ByteString -> Maybe QueryResponse
-decodeQueryResponse = decode
+decodeTopLevel :: ByteString -> Maybe QueryResponseLiteIdentity
+decodeTopLevel = decode
 
-instance ToJSON QueryResponse where
-    toJSON (QueryResponse merkleStateQueryResponse queryResponseTypeQueryResponse chainsQueryResponse chainIDQueryResponse queryResponseDataQueryResponse mainChainQueryResponse) =
+instance ToJSON QueryResponseLiteIdentity where
+    toJSON (QueryResponseLiteIdentity merkleStateQueryResponseLiteIdentity queryResponseLiteIdentityTypeQueryResponseLiteIdentity chainsQueryResponseLiteIdentity chainIDQueryResponseLiteIdentity queryResponseLiteIdentityDataQueryResponseLiteIdentity mainChainQueryResponseLiteIdentity) =
         object
-        [ "merkleState" .= merkleStateQueryResponse
-        , "type" .= queryResponseTypeQueryResponse
-        , "chains" .= chainsQueryResponse
-        , "chainId" .= chainIDQueryResponse
-        , "data" .= queryResponseDataQueryResponse
-        , "mainChain" .= mainChainQueryResponse
+        [ "merkleState" .= merkleStateQueryResponseLiteIdentity
+        , "type" .= queryResponseLiteIdentityTypeQueryResponseLiteIdentity
+        , "chains" .= chainsQueryResponseLiteIdentity
+        , "chainId" .= chainIDQueryResponseLiteIdentity
+        , "data" .= queryResponseLiteIdentityDataQueryResponseLiteIdentity
+        , "mainChain" .= mainChainQueryResponseLiteIdentity
         ]
 
-instance FromJSON QueryResponse where
-    parseJSON (Object v) = QueryResponse
+instance FromJSON QueryResponseLiteIdentity where
+    parseJSON (Object v) = QueryResponseLiteIdentity
         <$> v .: "merkleState"
         <*> v .: "type"
         <*> v .: "chains"
@@ -101,17 +100,15 @@ instance FromJSON MainChain where
         <*> v .: "height"
 
 instance ToJSON Data where
-    toJSON (Data dataTypeData urlData tokenURLData balanceData) =
+    toJSON (Data dataTypeData urlData lastUsedOnData) =
         object
         [ "type" .= dataTypeData
         , "url" .= urlData
-        , "tokenUrl" .= tokenURLData
-        , "balance" .= balanceData
+        , "lastUsedOn" .= lastUsedOnData
         ]
 
 instance FromJSON Data where
     parseJSON (Object v) = Data
         <$> v .: "type"
         <*> v .: "url"
-        <*> v .: "tokenUrl"
-        <*> v .: "balance"
+        <*> v .: "lastUsedOn"

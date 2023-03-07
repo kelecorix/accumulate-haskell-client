@@ -15,7 +15,7 @@ module Accumulate.RPC.Api
   ) where
 
 import           Control.Concurrent
-import           Control.Exception                     (bracket)
+import           Control.Exception                                (bracket)
 import           Control.Monad.IO.Class
 import           Control.Remote.Monad.JSON
 import           Control.Remote.Monad.JSON.Client
@@ -23,24 +23,31 @@ import           Control.Remote.Monad.JSON.Router
 import           Control.Remote.Monad.JSON.Trace
 import           Data.Aeson
 import           Data.Aeson.Types
-import           Data.Text                             as T
-import           Network.Socket                        (HostName, ServiceName,
-                                                        SocketType (Stream),
-                                                        addrAddress, addrFamily,
-                                                        addrProtocol,
-                                                        addrSocketType, close,
-                                                        connect, defaultHints,
-                                                        getAddrInfo, socket)
+import           Data.Text                                        as T
+import           Network.Socket                                   (HostName,
+                                                                   ServiceName,
+                                                                   SocketType (Stream),
+                                                                   addrAddress,
+                                                                   addrFamily,
+                                                                   addrProtocol,
+                                                                   addrSocketType,
+                                                                   close,
+                                                                   connect,
+                                                                   defaultHints,
+                                                                   getAddrInfo,
+                                                                   socket)
 
-import           Accumulate.RPC.JsonRpc                    (JsonRpcT, runJsonRpcT)
+import           Accumulate.RPC.JsonRpc                           (JsonRpcT,
+                                                                   runJsonRpcT)
 import           Accumulate.RPC.Types.ApiDataResponse
-import           Accumulate.RPC.Types.Responses.Version
 import           Accumulate.RPC.Types.Responses.Query
 import           Accumulate.RPC.Types.Responses.QueryDirectory
+import           Accumulate.RPC.Types.Responses.QueryLiteIdentity
+import           Accumulate.RPC.Types.Responses.Version
 
 --------------------------------------------------------------------------------
 
-endpoint = "https://v3.testnet.accumulatenetwork.io/v2"
+endpoint = "https://mainnet.accumulatenetwork.io/v2"
 
 runTCPClient :: HostName -> ServiceName -> JsonRpcT IO a -> IO a
 runTCPClient host port f = do
@@ -105,6 +112,22 @@ reqGetKeyBook url = method "sig-spec-group" $ List [String url]
 reqQuery :: Text -> RPC QueryResponse
 reqQuery url = method "query" $ Named [("url", String url)]
 
+reqQueryLiteIdentity :: Text -> RPC QueryResponseLiteIdentity
+reqQueryLiteIdentity url =
+  method "query" $ Named [("url", String url)]
+
+reqQueryLiteIdentityAsDir :: Text -> RPC QueryResponseLiteIdentity
+reqQueryLiteIdentityAsDir url =
+  method "query-directory" $ Named [ ("url"   , String url)
+                                   , ("expand", Bool True)
+                                   , ("expandChains", Bool True)
+                                   , ("start", Number 1)
+                                   , ("count", Number 20)
+                                   ]
+
+reqQueryLiteIdentityAsChain :: Text -> RPC ()
+reqQueryLiteIdentityAsChain chainId =
+  method "query-chain" $ Named [("chainId", String chainId)]
 
 -- | Get information about token transaction
 --
@@ -114,7 +137,10 @@ reqQueryTransaction txid = method "query-tx" $ List [String txid]
 -- |
 --
 reqQueryDirectory :: Text -> RPC QueryDirectoryResponse
-reqQueryDirectory url = method "query" $ Named [("url", String url)]
+reqQueryDirectory url = method "query-directory" $ Named [("url", String url)]
+
+reqQueryDirectory' :: Text -> RPC ()
+reqQueryDirectory' url = method "query" $ Named [("url", String url)]
 
 --------------------------------------------------------------------------------
 -- Metrics
@@ -151,18 +177,21 @@ reqAddCredits url = method "add-credits" $ List [String url]
 --------------------------------------------------------------------------------
 main = do
   let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
-  (v, q1, q2) <-
+  (v, q1, q2, q3) <-
     send s $ do
       v  <- reqGetVersion
-      q1 <- reqQuery "acc://5d21072c5d44111fcd3cbe25161f5e143498b56266dc1cd8/acme"
+      q1 <- reqQuery "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a/acme"
+      q2 <- reqQueryLiteIdentity "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a"
+      q3 <- reqQueryLiteIdentityAsDir "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a"
       --q2 <- reqQueryTransaction "1748e91a5bb57d6deabc341659828800694aaaae8178db5d5e8885d47431cbe1"
-      q3 <- reqQueryDirectory "acc://zorro20"
-      return (v, q1, q3)
-  putStrLn "-----------"
+      --q3 <- reqQueryDirectory "acc://kompendium.acme"
+      return (v, q1, q2, q3)
+
+  putStrLn "---------------------------------------------------"
   print $ show $ v
   putStrLn "-----------"
   print $ show $ q1
   putStrLn "-----------"
   print $ show $ q2
-  -- putStrLn "-----------"
-  -- print $ show $ q3
+  putStrLn "-----------"
+  print $ show $ q3

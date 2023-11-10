@@ -9,7 +9,7 @@
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE TypeOperators              #-}
 
-module Accumulate.RPC.Api
+module Accumulate.RPC.V3.Api
   ( runTCPClient
   , reqGetData
   ) where
@@ -23,6 +23,7 @@ import           Control.Remote.Monad.JSON.Router
 import           Control.Remote.Monad.JSON.Trace
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.Maybe
 import           Data.Text                                        as T
 import           Network.Socket                                   (HostName,
                                                                    ServiceName,
@@ -44,10 +45,12 @@ import           Accumulate.RPC.Types.Responses.Query
 import           Accumulate.RPC.Types.Responses.QueryDirectory
 import           Accumulate.RPC.Types.Responses.QueryLiteIdentity
 import           Accumulate.RPC.Types.Responses.Version
+import           Accumulate.RPC.V3.Types.ApiMetricsResponse
+import           Accumulate.RPC.V3.Types.ApiNetworkStatusResponse
 
 --------------------------------------------------------------------------------
 
-endpoint = "https://mainnet.accumulatenetwork.io/v2"
+endpoint = "https://mainnet.accumulatenetwork.io/v3"
 
 runTCPClient :: HostName -> ServiceName -> JsonRpcT IO a -> IO a
 runTCPClient host port f = do
@@ -103,6 +106,13 @@ reqCreateADI url = method "adi-create" $ List [String url]
 reqGetKeyBook :: Text -> RPC ()
 reqGetKeyBook url = method "sig-spec-group" $ List [String url]
 
+--------------------------------------------------------------------------------
+-- Faucet
+
+-- |
+--
+reqFaucet :: Text -> RPC ()
+reqFaucet url = method "faucet" $ Named [("url", String url)]
 
 --------------------------------------------------------------------------------
 -- Tokens
@@ -143,27 +153,32 @@ reqQueryDirectory' :: Text -> RPC ()
 reqQueryDirectory' url = method "query" $ Named [("url", String url)]
 
 --------------------------------------------------------------------------------
--- Metrics
 
--- |
+reqGetNetworkStatus :: RPC NetworkStatusResponse
+reqGetNetworkStatus = method "network-status" $ Named [("", String "")]
+
+
+reqGetConsensusStatus :: Text -> RPC VersionResponse
+reqGetConsensusStatus partition = method "consensus-status" $ Named [("nodeID", String partition)]
+
+reqGetMetricsStatus :: Text -> RPC MetricsResponse
+reqGetMetricsStatus p = method "metrics" $ Named [("partition", String p)]
+
+reqGetFindService :: RPC MetricsResponse
+reqGetFindService = method "find-service" $ Named [("network", "MainNet")]
+
+
+-- |  GetDirectory returns ADI directory entries
 --
--- reqGetMetrics :: Text -> Text -> RPC APIDataMetricsResponse
--- reqGetMetrics metricName duration =
---   method "metrics" $ Named [ ("metric"  , String metricName)
---                            , ("duration", String duration)
---                            ]
-
-reqGetVersion :: RPC VersionResponse
-reqGetVersion = method "version" $ List []
-
-
---------------------------------------------------------------------------------
--- Faucet
-
--- |
---
-reqFaucet :: Text -> RPC ()
-reqFaucet url = method "faucet" $ Named [("url", String url)]
+-- reqQueryMinorBlocks :: Text -> Int -> Int -> RPC APIMinorBlocksResponse
+-- reqQueryMinorBlocks url start count =
+--   method "query-minor-blocks"
+--     $ Named [ ("url"   , String url)
+--             , ("start" , Number (fromIntegral start))
+--             , ("count" , Number (fromIntegral count))
+--             , ("TxFetchMode", String "Expand")
+--             , ("BlockFilterMode", String "ExcludeNone")
+--             ]
 
 
 --------------------------------------------------------------------------------
@@ -179,19 +194,33 @@ main = do
   let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
   (v, q1, q2, q3) <-
     send s $ do
-      v  <- reqGetVersion
-      q1 <- reqQuery "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a/acme"
-      q2 <- reqQueryLiteIdentity "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a"
-      q3 <- reqQueryLiteIdentityAsDir "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a"
+      v  <- reqGetNetworkStatus
+      --q1 <- reqQuery "https://explorer.accumulatenetwork.io/acc/kompendium.acme/tokens"
+      --q1 <- reqQuery "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a/acme"
+      --q2 <- reqQueryLiteIdentity "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a"
+      --q3 <- reqQueryLiteIdentityAsDir "acc://12d3ab9ed87ab6b8755163d53ba475b2d7976b1e14b70f2a"
       --q2 <- reqQueryTransaction "1748e91a5bb57d6deabc341659828800694aaaae8178db5d5e8885d47431cbe1"
       --q3 <- reqQueryDirectory "acc://kompendium.acme"
+
+      -- q1 <- reqGetConsensusStatus "12D3KooWQwSDdabKJJao5kB78PymyBaBiPmoBy2B7ft57LbfB7de"
+      -- q1 <- reqGetMetricsStatus ""
+
+      --q1 <- reqGetFindService
+
+      let q2 = ""
+          q3 = ""
       return (v, q1, q2, q3)
 
   putStrLn "---------------------------------------------------"
   print $ show $ v
+  putStrLn "--------------------------------------------------"
+  print $ show $ networkNetworkStatusResponse $ v
   putStrLn "-----------"
-  print $ show $ q1
+  print $ show $ globalsNetworkStatusResponse $ v
   putStrLn "-----------"
-  print $ show $ q2
-  putStrLn "-----------"
-  print $ show $ q3
+  print $ createIdentitySlidingFeeSchedule $ feeScheduleGlobals $ globalsNetworkStatusResponse $ v
+
+
+-- Small Tasks from Network call
+-- 1. construct list of tuples (key-value) that represent validators
+-- 2. get list of partitions

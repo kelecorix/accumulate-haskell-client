@@ -9,8 +9,8 @@ import qualified Data.Text                   as T
 import           Data.Time.Clock
 import           System.Environment
 
-import qualified Accumulate.RPC.Api              as AcmeApi
-import qualified Accumulate.RPC.Types            as AcmeApi
+import qualified Accumulate.RPC.Types        as AcmeApi
+import qualified Accumulate.RPC.V2.Api       as AcmeApi
 
 --------------------------------------------------------------------------------
 main :: IO ()

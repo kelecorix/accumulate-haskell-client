@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.1.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d2dbf3cb600ecde1903b3d4907212fbd49dedd7b30a1c948c07de90b22d0a702
+-- hash: 7e954d3abc1dda634c010442b41eeb332d80ce13f4d03966f9f5b517132ecf29
 
 name:           api-rpc-accumulate
 version:        0.1.1.0
@@ -28,13 +28,15 @@ source-repository head
 
 library
   exposed-modules:
-      Accumulate.RPC.Api
+      Accumulate.RPC.V2.Api
       Accumulate.RPC.Types
   other-modules:
       Accumulate.RPC.JsonRpc
       Accumulate.RPC.Types.ApiDataMetricsResponse
       Accumulate.RPC.Types.ApiDataResponse
       Accumulate.RPC.Types.ApiDataVersionResponse
+      Accumulate.RPC.Types.ApiMinorBlocksResponse
+      Accumulate.RPC.Types.ApiNetworkDescribeResponse
       Accumulate.RPC.Types.IdentityADI
       Accumulate.RPC.Types.LiteAccount
       Accumulate.RPC.Types.Responses.Query
@@ -43,6 +45,11 @@ library
       Accumulate.RPC.Types.Responses.Version
       Accumulate.RPC.Types.TokenAccount
       Accumulate.RPC.Utils.Marshaller
+      Accumulate.RPC.V3.Api
+      Accumulate.RPC.V3.Types
+      Accumulate.RPC.V3.Types.ApiMetricsResponse
+      Accumulate.RPC.V3.Types.ApiMinorBlockResponse
+      Accumulate.RPC.V3.Types.ApiNetworkStatusResponse
       Paths_api_rpc_accumulate
   hs-source-dirs:
       src

@@ -5,26 +5,26 @@ import           Data.Text as T
 
 ---------------------------------------------------------------
 
-data EventType =
-    Error
-  | Block
-  | Globals -- 1, 2, 3
+-- data EventType =
+--     Error
+--   | Block
+--   | Globals -- 1, 2, 3
 
-data EventTypeArgs =
-    EventType
-  | T.Text
+-- data EventTypeArgs =
+--     EventType
+--   | T.Text
 
-data QueryType =
-    Default
-  | Chain
-  | Data
-  | Directory
-  | Pending
-  | Block
-  | AnchorSearch
-  | PublicKeySearch
-  | PublicKeyHashSearch
-  | DelegateSearch
-  | MessageHashSearch
+-- data QueryType =
+--     Default
+--   | Chain
+--   | Data
+--   | Directory
+--   | Pending
+--   | Block
+--   | AnchorSearch
+--   | PublicKeySearch
+--   | PublicKeyHashSearch
+--   | DelegateSearch
+--   | MessageHashSearch
 
-data QueryTypeArgs = QueryType | T.Text
+-- data QueryTypeArgs = QueryType | T.Text

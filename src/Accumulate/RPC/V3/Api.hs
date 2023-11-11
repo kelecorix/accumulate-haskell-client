@@ -15,7 +15,7 @@ module Accumulate.RPC.V3.Api
   ) where
 
 import           Control.Concurrent
-import           Control.Exception                                (bracket)
+import           Control.Exception                                   (bracket)
 import           Control.Monad.IO.Class
 import           Control.Remote.Monad.JSON
 import           Control.Remote.Monad.JSON.Client
@@ -24,28 +24,31 @@ import           Control.Remote.Monad.JSON.Trace
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Maybe
-import           Data.Text                                        as T
-import           Network.Socket                                   (HostName,
-                                                                   ServiceName,
-                                                                   SocketType (Stream),
-                                                                   addrAddress,
-                                                                   addrFamily,
-                                                                   addrProtocol,
-                                                                   addrSocketType,
-                                                                   close,
-                                                                   connect,
-                                                                   defaultHints,
-                                                                   getAddrInfo,
-                                                                   socket)
+import           Data.Text                                           as T
+import           GHC.Exts
+import           Network.Socket                                      (HostName,
+                                                                      ServiceName,
+                                                                      SocketType (Stream),
+                                                                      addrAddress,
+                                                                      addrFamily,
+                                                                      addrProtocol,
+                                                                      addrSocketType,
+                                                                      close,
+                                                                      connect,
+                                                                      defaultHints,
+                                                                      getAddrInfo,
+                                                                      socket)
 
-import           Accumulate.RPC.JsonRpc                           (JsonRpcT,
-                                                                   runJsonRpcT)
+import           Accumulate.RPC.JsonRpc                              (JsonRpcT,
+                                                                      runJsonRpcT)
 import           Accumulate.RPC.Types.ApiDataResponse
 import           Accumulate.RPC.Types.Responses.Query
 import           Accumulate.RPC.Types.Responses.QueryDirectory
 import           Accumulate.RPC.Types.Responses.QueryLiteIdentity
 import           Accumulate.RPC.Types.Responses.Version
+import           Accumulate.RPC.V3.Types.ApiFindServiceResponse
 import           Accumulate.RPC.V3.Types.ApiMetricsResponse
+import           Accumulate.RPC.V3.Types.ApiMinorBlocksRangeResponse
 import           Accumulate.RPC.V3.Types.ApiNetworkStatusResponse
 
 --------------------------------------------------------------------------------
@@ -164,21 +167,44 @@ reqGetConsensusStatus partition = method "consensus-status" $ Named [("nodeID", 
 reqGetMetricsStatus :: Text -> RPC MetricsResponse
 reqGetMetricsStatus p = method "metrics" $ Named [("partition", String p)]
 
-reqGetFindService :: RPC MetricsResponse
-reqGetFindService = method "find-service" $ Named [("network", "MainNet")]
+reqGetFindService :: RPC FindServiceResponse
+reqGetFindService = method "find-service" $ Named [ ("network", "MainNet")
+                                                  , ("known", Bool True)
+                                                  , ("service", Object $
+                                                                  fromList
+                                                                    [ ("type"    , String "consensus") -- equal to reqGetConsensusStatus
+                                                                    , ("argument", String "directory")
+                                                                    ]
+                                                    )
+
+                                                  ]
 
 
 -- |  GetDirectory returns ADI directory entries
 --
--- reqQueryMinorBlocks :: Text -> Int -> Int -> RPC APIMinorBlocksResponse
--- reqQueryMinorBlocks url start count =
---   method "query-minor-blocks"
---     $ Named [ ("url"   , String url)
---             , ("start" , Number (fromIntegral start))
---             , ("count" , Number (fromIntegral count))
---             , ("TxFetchMode", String "Expand")
---             , ("BlockFilterMode", String "ExcludeNone")
---             ]
+reqQueryMinorBlocks :: Text -> Int -> Int -> RPC MinorBlocksRangeResponse
+reqQueryMinorBlocks url start count =
+  method "query"
+    $ Named [ ("scope", String url)
+            , ("query", Object $ fromList  [ ("queryType" , String "block")
+                                           -- , ("minor",  Number 1) --get exact?
+                                           , ("minorRange", Object $ fromList
+                                                 [ ("start", Number $ fromIntegral start)
+                                                 , ("count", Number $ fromIntegral count)
+                                                 , ("expand", Bool True)
+                                                 ])
+                                           ])
+            -- , ("query", Object $ fromList
+            --               [ ("minor"     , Bool True)
+            --               , ("minorRange", Object $ fromList
+            --                                  [ ("start", Number $ fromIntegral start)
+            --                                  , ("count", Number $ fromIntegral count)
+            --                                  , ("expand", Bool True)
+            --                                  --, ("fromEnd", Bool False)
+            --                                  ])
+            --               , ("omitEmpty", Bool True)
+            --               ])
+            ]
 
 
 --------------------------------------------------------------------------------
@@ -202,25 +228,31 @@ main = do
       --q2 <- reqQueryTransaction "1748e91a5bb57d6deabc341659828800694aaaae8178db5d5e8885d47431cbe1"
       --q3 <- reqQueryDirectory "acc://kompendium.acme"
 
-      -- q1 <- reqGetConsensusStatus "12D3KooWQwSDdabKJJao5kB78PymyBaBiPmoBy2B7ft57LbfB7de"
       -- q1 <- reqGetMetricsStatus ""
 
       --q1 <- reqGetFindService
+      q2 <- reqQueryMinorBlocks "acc://bvn-Apollo.acme" 1 100
 
-      let q2 = ""
+      let
+          q1 = ""
           q3 = ""
       return (v, q1, q2, q3)
 
   putStrLn "---------------------------------------------------"
   print $ show $ v
-  putStrLn "--------------------------------------------------"
+
+  putStrLn "-- STATUS ------------------------------------------------"
   print $ show $ networkNetworkStatusResponse $ v
-  putStrLn "-----------"
+
+  putStrLn "-- GLOBALS -----------------"
   print $ show $ globalsNetworkStatusResponse $ v
-  putStrLn "-----------"
+
+  putStrLn "-- FEE SCHEDULE ---------"
   print $ createIdentitySlidingFeeSchedule $ feeScheduleGlobals $ globalsNetworkStatusResponse $ v
 
+  putStrLn "-- CONSENSUS STATUS ---------"
+  print $ show $ q1
 
--- Small Tasks from Network call
--- 1. construct list of tuples (key-value) that represent validators
--- 2. get list of partitions
+  putStrLn "---------------------------------------------------"
+  putStrLn "-- MINOR BLOCKS ---------"
+  print $ Prelude.length $ fromJust $ recordsMinorBlocksRangeResponse q2

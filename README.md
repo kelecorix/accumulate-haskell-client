@@ -29,12 +29,12 @@ $ stack repl
 
 
 ```haskell
-      let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
-      h <-
-        send s $ do
-          h <- reqGetData "acc://9c549cbba290efeb8029184caac3d36c5bfcacb361a29282/ACME"
-          return h
-      print h
+let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
+h <-
+  send s $ do
+	h <- reqGetData "acc://9c549cbba290efeb8029184caac3d36c5bfcacb361a29282/ACME"
+	return h
+print h
 ```
 
 ## Usage
@@ -45,7 +45,7 @@ See how it's used in real application here https://github.com/sigrlami/siare/tre
 
 ## Contributions
 
-The Library developed by Kelecorix, Inc. If you're an active user or find it useful we strongly encourage you to support our efforts and ensure long maintenance by contributing a small donation to one of the following cryptocurrency addresses:
+The library developed by Kelecorix, Inc. If you're an active user or find it useful we strongly encourage you to support our efforts and ensure long maintenance by contributing a small donation to one of the following cryptocurrency addresses:
 
 - ACME: acc://dodecahedron.acme/tipjar
 - ETH: 0x885cf43dbe00739202d817d87133189dc5d2441d

@@ -47,6 +47,7 @@ import           Accumulate.RPC.Types.Responses.QueryDirectory
 import           Accumulate.RPC.Types.Responses.QueryLiteIdentity
 import           Accumulate.RPC.Types.Responses.Version
 import           Accumulate.RPC.V3.Types.ApiFindServiceResponse
+import           Accumulate.RPC.V3.Types.ApiMajorBlocksRangeResponse
 import           Accumulate.RPC.V3.Types.ApiMetricsResponse
 import           Accumulate.RPC.V3.Types.ApiMinorBlocksRangeResponse
 import           Accumulate.RPC.V3.Types.ApiNetworkStatusResponse
@@ -206,6 +207,20 @@ reqQueryMinorBlocks url start count =
             --               ])
             ]
 
+reqQueryMajorBlocks :: Text -> Int -> Int -> RPC MajorBlocksRangeResponse
+reqQueryMajorBlocks url start count =
+  method "query"
+    $ Named [ ("scope", String url)
+            , ("query", Object $ fromList
+                [ ("queryType" , String "block")
+                , ("majorRange", Object $ fromList
+                                 [ ("start", Number $ fromIntegral start)
+                                 , ("count", Number $ fromIntegral count)
+                                 , ("expand", Bool True)
+                                 ])
+                ])
+            ]
+
 
 --------------------------------------------------------------------------------
 -- Credits
@@ -231,11 +246,12 @@ main = do
       -- q1 <- reqGetMetricsStatus ""
 
       --q1 <- reqGetFindService
-      q2 <- reqQueryMinorBlocks "acc://bvn-Apollo.acme" 1 100
+      --q2 <- reqQueryMinorBlocks "acc://bvn-Apollo.acme" 1 100
+      q3 <- reqQueryMajorBlocks "acc://bvn-Apollo.acme" 1 100
 
       let
-          q1 = ""
-          q3 = ""
+           q1 = ""
+           q2 = ""
       return (v, q1, q2, q3)
 
   putStrLn "---------------------------------------------------"
@@ -255,4 +271,8 @@ main = do
 
   putStrLn "---------------------------------------------------"
   putStrLn "-- MINOR BLOCKS ---------"
-  print $ Prelude.length $ fromJust $ recordsMinorBlocksRangeResponse q2
+  --print $ Prelude.length $ fromJust $ recordsMinorBlocksRangeResponse q2
+
+  putStrLn "---------------------------------------------------"
+  putStrLn "-- MAJOR BLOCKS ---------"
+  print $ show $ q3

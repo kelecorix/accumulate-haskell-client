@@ -49,6 +49,7 @@ import           Accumulate.RPC.Types.Responses.Version
 import           Accumulate.RPC.V3.Types.ApiFindServiceResponse
 import           Accumulate.RPC.V3.Types.ApiMajorBlocksRangeResponse
 import           Accumulate.RPC.V3.Types.ApiMetricsResponse
+import           Accumulate.RPC.V3.Types.ApiMinorBlockResponse
 import           Accumulate.RPC.V3.Types.ApiMinorBlocksRangeResponse
 import           Accumulate.RPC.V3.Types.ApiNetworkStatusResponse
 
@@ -181,31 +182,31 @@ reqGetFindService = method "find-service" $ Named [ ("network", "MainNet")
                                                   ]
 
 
--- |  GetDirectory returns ADI directory entries
---
+-- | Rerieves Minor blocks for specified range
+--      to avoid useless records use ("omitEmpty", Bool True) in query params
 reqQueryMinorBlocks :: Text -> Int -> Int -> RPC MinorBlocksRangeResponse
 reqQueryMinorBlocks url start count =
   method "query"
     $ Named [ ("scope", String url)
-            , ("query", Object $ fromList  [ ("queryType" , String "block")
-                                           -- , ("minor",  Number 1) --get exact?
-                                           , ("minorRange", Object $ fromList
-                                                 [ ("start", Number $ fromIntegral start)
-                                                 , ("count", Number $ fromIntegral count)
-                                                 , ("expand", Bool True)
-                                                 ])
-                                           ])
-            -- , ("query", Object $ fromList
-            --               [ ("minor"     , Bool True)
-            --               , ("minorRange", Object $ fromList
-            --                                  [ ("start", Number $ fromIntegral start)
-            --                                  , ("count", Number $ fromIntegral count)
-            --                                  , ("expand", Bool True)
-            --                                  --, ("fromEnd", Bool False)
-            --                                  ])
-            --               , ("omitEmpty", Bool True)
-            --               ])
+            , ("query", Object $ fromList
+                [ ("queryType" , String "block")
+                , ("minorRange", Object $ fromList
+                                 [ ("start", Number $ fromIntegral start)
+                                 , ("count", Number $ fromIntegral count)
+                                 , ("expand", Bool True)
+                                 ])
+                ])
             ]
+
+reqQueryMinorBlockByHeight :: Text -> Int -> RPC MinorBlockResponse
+reqQueryMinorBlockByHeight url height =
+  method "query"
+    $ Named [ ("scope", String url)
+            , ("query", Object $ fromList  [ ("queryType" , String "block")
+                                           , ("minor",  Number $ fromIntegral height)
+                                           ])
+            ]
+
 
 reqQueryMajorBlocks :: Text -> Int -> Int -> RPC MajorBlocksRangeResponse
 reqQueryMajorBlocks url start count =
@@ -221,6 +222,28 @@ reqQueryMajorBlocks url start count =
                 ])
             ]
 
+-- Retrieves last 50 major blocks
+reqGetLastMajorBlocks :: Text -> RPC MajorBlocksRangeResponse
+reqGetLastMajorBlocks url  =
+  method "query"
+    $ Named [ ("scope", String url)
+            , ("query", Object $ fromList
+                [ ("queryType" , String "block")
+                , ("majorRange", Object $ fromList
+                                 [ ("fromEnd", Bool True)
+                                 ])
+                ])
+            ]
+
+reqQueryMajorBlockByHeight :: Text -> Int -> RPC MinorBlockResponse
+reqQueryMajorBlockByHeight url height =
+  method "query"
+    $ Named [ ("scope", String url)
+            , ("query", Object $ fromList  [ ("queryType" , String "block")
+                                           , ("major",  Number $ fromIntegral height)
+                                           ])
+            ]
+
 
 --------------------------------------------------------------------------------
 -- Credits
@@ -231,6 +254,24 @@ reqAddCredits :: Text -> RPC ()
 reqAddCredits url = method "add-credits" $ List [String url]
 
 --------------------------------------------------------------------------------
+-- Utility functions
+
+getCurrentHeightMajor :: IO Accumulate.RPC.V3.Types.ApiMajorBlocksRangeResponse.Record
+getCurrentHeightMajor = do
+  let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
+  (mr) <-
+    send s $ do
+      mr <- reqGetLastMajorBlocks "acc://bvn-Apollo.acme"
+      return mr
+
+  let currentHeightMajor = Prelude.last $ fromMaybe [] $ recordsMajorBlocksRangeResponse $ mr
+
+  return $ currentHeightMajor
+
+
+--------------------------------------------------------------------------------
+-- TESTING
+
 main = do
   let s = weakSession (traceSendAPI "" $ clientSendAPI endpoint)
   (v, q1, q2, q3) <-
@@ -247,7 +288,8 @@ main = do
 
       --q1 <- reqGetFindService
       --q2 <- reqQueryMinorBlocks "acc://bvn-Apollo.acme" 1 100
-      q3 <- reqQueryMajorBlocks "acc://bvn-Apollo.acme" 1 100
+      --q3 <- reqQueryMinorBlockByHeight "acc://bvn-Chandrayaan.acme" 15927876 -- "acc://bvn-Apollo.acme"
+      q3 <- reqGetLastMajorBlocks "acc://bvn-Apollo.acme"
 
       let
            q1 = ""
@@ -276,3 +318,8 @@ main = do
   putStrLn "---------------------------------------------------"
   putStrLn "-- MAJOR BLOCKS ---------"
   print $ show $ q3
+
+  putStrLn "---------------------------------------------------"
+  putStrLn "-- MAJOR HEIGHT ---------"
+  let currentHeightMajor = Prelude.last $ fromMaybe [] $ recordsMajorBlocksRangeResponse $ q3
+  print $ show $ currentHeightMajor

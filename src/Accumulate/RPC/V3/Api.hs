@@ -46,6 +46,7 @@ import           Accumulate.RPC.Types.Responses.Query
 import           Accumulate.RPC.Types.Responses.QueryDirectory
 import           Accumulate.RPC.Types.Responses.QueryLiteIdentity
 import           Accumulate.RPC.Types.Responses.Version
+import           Accumulate.RPC.V3.Types.ApiDirectoryResponse
 import           Accumulate.RPC.V3.Types.ApiFindServiceResponse
 import           Accumulate.RPC.V3.Types.ApiMajorBlocksRangeResponse
 import           Accumulate.RPC.V3.Types.ApiMetricsResponse
@@ -245,6 +246,14 @@ reqQueryMajorBlockByHeight url height =
             ]
 
 
+reqQueryADI :: Text -> RPC DirectoryResponse
+reqQueryADI url =
+  method "query"
+    $ Named [ ("scope", String url)
+            --, ("query", Object $ fromList  [ ("queryType" , String "directory")
+            --                               ])
+            ]
+
 --------------------------------------------------------------------------------
 -- Credits
 
@@ -289,7 +298,8 @@ main = do
       --q1 <- reqGetFindService
       --q2 <- reqQueryMinorBlocks "acc://bvn-Apollo.acme" 1 100
       --q3 <- reqQueryMinorBlockByHeight "acc://bvn-Chandrayaan.acme" 15927876 -- "acc://bvn-Apollo.acme"
-      q3 <- reqGetLastMajorBlocks "acc://bvn-Apollo.acme"
+      --q3 <- reqGetLastMajorBlocks "acc://bvn-Apollo.acme"
+      q3 <- reqQueryADI "acc://dodecahedron.acme"
 
       let
            q1 = ""
@@ -317,9 +327,12 @@ main = do
 
   putStrLn "---------------------------------------------------"
   putStrLn "-- MAJOR BLOCKS ---------"
+
+
+  putStrLn "-- ADI ---------"
   print $ show $ q3
 
-  putStrLn "---------------------------------------------------"
-  putStrLn "-- MAJOR HEIGHT ---------"
-  let currentHeightMajor = Prelude.last $ fromMaybe [] $ recordsMajorBlocksRangeResponse $ q3
-  print $ show $ currentHeightMajor
+  -- putStrLn "---------------------------------------------------"
+  -- putStrLn "-- MAJOR HEIGHT ---------"
+  -- let currentHeightMajor = Prelude.last $ fromMaybe [] $ recordsMajorBlocksRangeResponse $ q3
+  -- print $ show $ currentHeightMajor
